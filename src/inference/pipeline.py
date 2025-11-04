@@ -94,3 +94,27 @@ class DetectionPipeline:
 
         logger.info("Pipeline execution completed successfully.")
         return visualized_img, cropped_regions
+    
+     # Fastapi routes 
+    def run_image(self, image, save_dir="output/api_results"):
+        """
+        un detection pipeline directly on a given image (no file path).
+        ussed for API requests.
+        """
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        boxes, confidences, classes, x_factor, y_factor = self.detector.detect(image)
+        if not boxes:
+            logger.warning("no detections found.")
+            return image, []
+
+        cropped_regions = self.roi_extractor.extract(image, boxes, x_factor, y_factor)
+        visualized_img = self.visualizer.draw_boxes(image.copy(), boxes, confidences, classes, x_factor, y_factor)
+
+        result_path = os.path.join(save_dir, "detections.jpg")
+        cv2.imwrite(result_path, visualized_img)
+        for i, crop in enumerate(cropped_regions):
+            cv2.imwrite(os.path.join(save_dir, f"crop_{i}.jpg"), crop)
+
+        return visualized_img, cropped_regions
