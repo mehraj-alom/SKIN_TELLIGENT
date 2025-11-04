@@ -109,7 +109,7 @@ class DetectionPipeline:
             logger.warning("no detections found.")
             return image, []
 
-        cropped_regions = self.roi_extractor.extract(image, boxes, x_factor, y_factor)
+        cropped_regions = self.roi_extractor.crop_rois(image, boxes, x_factor, y_factor)
         visualized_img = self.visualizer.draw_boxes(image.copy(), boxes, confidences, classes, x_factor, y_factor)
 
         result_path = os.path.join(save_dir, "detections.jpg")
