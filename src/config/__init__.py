@@ -1,0 +1,1 @@
+from .detector_config import DetectorConfig
