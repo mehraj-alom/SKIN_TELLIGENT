@@ -26,3 +26,10 @@ This project is under active development. The final README, detailed model docum
 
 ### More Will be added later
 
+## 🧭 SKIN_TELLIGENT Pipeline Overview
+
+<p align="center">
+  <img src="https://i.ibb.co/hJfvCpD3/pipeline-overview.png" 
+       alt="Detection and Classification Pipeline" width="750">
+</p>
+
