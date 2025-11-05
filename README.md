@@ -13,11 +13,11 @@ Performs object detection, ROI extraction, and visualization of skin regions usi
 - Integrated classification for detected skin regions using PyTorch models (.pth)
 - Ready for extension (MLflow, AWS)
 
-  ## Recent Updates
--Added Classifier module — runs on cropped regions from YOLO detections
--Enhanced pipeline to perform end-to-end Detection + Disease Classification
--FastAPI integration for real-time inference
--Future updates: improved inference speed, better UI, and health-risk scoring , Masking for more detailed , VIT (in place of classfier ) , ensemble method , multi modal inference
+## Recent Updates
+- Added Classifier module — runs on cropped regions from YOLO detections
+- Enhanced pipeline to perform end-to-end Detection + Disease Classification
+- FastAPI integration for real-time inference
+- Future updates: improved inference speed, better UI, and health-risk scoring , Masking for more detailed , VIT (in place of classfier ) , ensemble method , multi modal inference
 
 
 ## Note
