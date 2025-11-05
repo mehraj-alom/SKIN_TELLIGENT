@@ -1,0 +1,3 @@
+UPDATE THE DETECTOR MODEL :#MUST BE FIXED 
+                          1. Even at conf = 0.2 and prob thhess = 0.1 amd NMS thresh  = 70 
+                             TN is so high 

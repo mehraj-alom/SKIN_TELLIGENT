@@ -1,4 +1,4 @@
-from src.inference.pipeline import DetectionPipeline
+from src.inference.pipeline import DetectionAndClassificationPipeline
 from logger import logger
 
 def main():
@@ -6,8 +6,8 @@ def main():
 
 
 
-    pipeline = DetectionPipeline(config_path=config_path)
-    output_img, crops = pipeline.run()
+    pipeline = DetectionAndClassificationPipeline(config_path=config_path)
+    output_img, crops , classification_result  = pipeline.run()
 
     logger.info(f"Pipeline finished. {len(crops)} regions saved.")
 

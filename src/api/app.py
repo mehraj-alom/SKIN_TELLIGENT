@@ -4,14 +4,14 @@ from pathlib import Path
 import cv2
 import numpy as np
 import os
-from src.inference.pipeline import DetectionPipeline
+from src.inference.pipeline import DetectionAndClassificationPipeline
 from logger import logger
 
 logger.info("Starting SKINTELLIGENT API...")
 app = FastAPI(title="SKINTELLIGENT API", description="detection Pipeline")
 
 
-pipeline = DetectionPipeline(config_path=Path("src/config/pipeline_config.yaml"))
+pipeline = DetectionAndClassificationPipeline(config_path=Path("src/config/pipeline_config.yaml"))
 
 
 @app.get("/")
@@ -31,7 +31,7 @@ async def detect_skin_disease(file: UploadFile = File(...)):
         image = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
 
         
-        output_img, crops = pipeline.run_image(image=image, save_dir="output/api_results")
+        output_img, crops , classification_result = pipeline.run_image(image=image, save_dir="output/api_results")
     # jsom response with file paths
         crop_paths = [f"output/api_results/crop_{i}.jpg" for i in range(len(crops))]
         result_path = "output/api_results/detections.jpg"
@@ -40,7 +40,8 @@ async def detect_skin_disease(file: UploadFile = File(...)):
             "message": "Detection completed successfully.",
             "detections": len(crops),
             "detection_image": result_path,
-            "roi_crops": crop_paths
+            "roi_crops": crop_paths,
+            "classification_results": classification_result
         }
 
         return JSONResponse(content=response)
@@ -59,3 +60,6 @@ def download_file(filename: str):
     if not file_path.exists():
         return JSONResponse(status_code=404, content={"error": "File not found"})
     return FileResponse(file_path)
+
+
+ 
