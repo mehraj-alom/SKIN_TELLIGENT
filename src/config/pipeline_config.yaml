@@ -12,7 +12,7 @@ params:
   input_height: 640
 
 inference:
-  input_image: "data/samples/ROI_detector/eczema_0.webp"
+  input_image: "data/samples/ROI_detector/th.png"
   output_dir: "output/"
 
 classifier_constants:

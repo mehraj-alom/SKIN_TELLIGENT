@@ -97,7 +97,9 @@ class DetectionAndClassificationPipeline:
         boxes, confidences, classes, x_factor, y_factor = self.detector.detect(image)
         if not boxes:
             logger.warning("No detections found.")
-            return image, []
+            logger.warning("sending the input image for classification.")
+            classification_result = self.classifier.predict(image)
+            return image, [], classification_result
 
         # extract Cropped ROIs
         cropped_regions = self.roi_extractor.crop_rois(image, boxes, x_factor, y_factor)
@@ -105,6 +107,7 @@ class DetectionAndClassificationPipeline:
 
         # classification on each cropped ROI
         classifier_results = []
+
         for i, roi in enumerate(cropped_regions):
             preds = self.classifier.predict(roi)
             if preds is not None:
@@ -149,7 +152,7 @@ class DetectionAndClassificationPipeline:
 
         boxes, confidences, classes, x_factor, y_factor = self.detector.detect(image)
         if not boxes:
-            logger.warning("no detections found.")
+            logger.warning("no detections found.")        # send the input image for classification. neeed to be corrected the logui heree 
             return image, []
 
         cropped_regions = self.roi_extractor.crop_rois(image, boxes, x_factor, y_factor)

@@ -113,7 +113,9 @@ class Classifier:
                 top_idx = int(np.argmax(probs))
                 confidence = float(probs[top_idx])
                 class_name = self.class_labels[top_idx] if self.class_labels else f"class_{top_idx}"
-                
+                if confidence < 0.6:
+                    class_name = "unknown - better visit a specialist"
+                    confidence = 0.0
                 logger.info(f"Predicted {class_name} ({confidence:.4f})")
                 return {"class_name": class_name, "confidence": confidence}
 

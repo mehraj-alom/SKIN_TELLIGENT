@@ -1,1 +1,1 @@
-from .pipeline import DetectionPipeline
+from .pipeline import DetectionAndClassificationPipeline

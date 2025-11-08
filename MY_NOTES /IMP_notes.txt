@@ -1,3 +1,19 @@
 UPDATE THE DETECTOR MODEL :#MUST BE FIXED 
                           1. Even at conf = 0.2 and prob thhess = 0.1 amd NMS thresh  = 70 
                              TN is so high 
+##### URGENT ##
+if Detection fails the image isn,t gpoing for preediction ( excellent) - but why ??
+             - > coz ditection is weak . need to update the detection modal 
+
+
+## fix: ***urgent 
+      in pipeline.py run_image (look for comment , no detection found )
+       --> FIX : output_img, crops , classification_result  = pipeline.run()
+                     ^^^^^^^^^^^^^^^^^ValueError: not enough values to unpack (expected 3, got 2)
+
+            FIXED : THE image sent for classificcation even wuthouty detection btt but 
+
+       --> ITS A  MANDATORY ERROR (FEATURE) :
+                     # This should be there coz {
+                        1. If the image isnt related to skin disease then it should't sent for the classification
+                     }
