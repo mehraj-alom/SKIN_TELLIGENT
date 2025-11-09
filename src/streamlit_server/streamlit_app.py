@@ -13,7 +13,6 @@ import os
 import sys
 from pathlib import Path
 
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from src.inference.pipeline import DetectionAndClassificationPipeline
 from logger import logger
@@ -28,9 +27,10 @@ st.set_page_config(
     page_icon="🧠",
 )
 
-DEMO_IMAGE_PATH = "data/samples/ROI_detector/detection_result.png"  
+DEMO_IMAGE_PATH = "data/samples/ROI_detector/detection_result.png"
+
 # ============================================================
-# STYLE <- chatgpt
+# STYLE
 # ============================================================
 
 st.markdown("""
@@ -179,11 +179,15 @@ if image_source is not None:
                                     conf = float(res.get("confidence", 0))
                                     name = res.get("class_name", "Unknown")
                                     color = "#00FF88" if conf > 0.8 else "#FFD700" if conf > 0.6 else "#FF6B6B"
+                                    
+                                    # Updated style (white disease name)
                                     st.markdown(
-                                        f"<div class='result-card'>"
-                                        f"<b>{name}</b><br>"
-                                        f"<span style='color:{color};'>Confidence: {conf*100:.2f}%</span>"
-                                        f"</div>",
+                                        f"""
+                                        <div class='result-card'>
+                                            <b style='color:white; font-size:18px;'>{name}</b><br>
+                                            <span style='color:{color}; font-weight:500;'>Confidence: {conf*100:.2f}%</span>
+                                        </div>
+                                        """,
                                         unsafe_allow_html=True
                                     )
                 else:
