@@ -1,7 +1,14 @@
 import streamlit as st
 from PIL import Image
 import numpy as np
-import cv2
+import sys
+try:
+    import cv2
+except ImportError:
+    import pip
+    pip.main(["install", "opencv-python-headless"])
+    import cv2
+
 import os
 import sys
 from pathlib import Path
