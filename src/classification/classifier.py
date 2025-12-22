@@ -12,6 +12,7 @@ import numpy as np
 from PIL import Image
 from yaml.loader import SafeLoader
 import cv2
+from src.explainabaility.gradcampp import GradCAMPlusPlus, apply_heatmap_on_image
 
 class Classifier:
     def __init__(self, config: PredictionConfig):
@@ -117,8 +118,57 @@ class Classifier:
                     class_name = "unknown - better visit a specialist"
                     confidence = 0.0
                 logger.info(f"Predicted {class_name} ({confidence:.4f})")
-                return {"class_name": class_name, "confidence": confidence}
+                return {"class_name": class_name, "confidence": confidence, "class_idx": top_idx}
 
         except Exception as e:
             logger.exception(f"Model inference failed: {e}")
+            return None
+
+    def explain(self, image_input: Union[str, Path, IO, Image.Image, np.ndarray], save_path: str = None) -> Union[str, None]:
+        """Generate Grad-CAM++ overlay for the top predicted class and save to `save_path`.
+
+        Returns the path to the saved image or None on failure.
+        """
+        if self.model is None or self.transform is None:
+            logger.error("Model or transform not available for explainability")
+            return None
+
+        try:
+            # Prepare numpy image for overlay size
+            if isinstance(image_input, np.ndarray):
+                # BGR -> RGB
+                orig_np = cv2.cvtColor(image_input, cv2.COLOR_BGR2RGB)
+                pil_img = Image.fromarray(orig_np)
+            elif isinstance(image_input, Image.Image):
+                pil_img = image_input.convert("RGB")
+                orig_np = np.array(pil_img)
+            else:
+                # path or file-like
+                pil_img = Image.open(image_input).convert("RGB")
+                orig_np = np.array(pil_img)
+
+            up_h, up_w = orig_np.shape[0], orig_np.shape[1]
+
+            # Preprocess and get tensor
+            input_tensor = self.transform.preprocess_image(pil_img).unsqueeze(0)
+
+            cam_tool = GradCAMPlusPlus(self.model)
+            heatmap = cam_tool.generate_cam(input_tensor, target_class=None, upsample_size=(up_h, up_w))
+
+            overlay = apply_heatmap_on_image(orig_np, heatmap, alpha=0.4)
+
+            if save_path is None:
+                # default temp path
+                save_path = os.path.join("output", "explainability")
+                os.makedirs(save_path, exist_ok=True)
+                save_path = os.path.join(save_path, "gradcam.jpg")
+            else:
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+            # overlay is RGB numpy array; save with cv2 (convert RGB->BGR)
+            cv2.imwrite(save_path, cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
+            logger.info(f"Saved Grad-CAM++ overlay at: {save_path}")
+            return save_path
+        except Exception as e:
+            logger.exception(f"Explainability generation failed: {e}")
             return None

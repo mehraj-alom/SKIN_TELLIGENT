@@ -1,4 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+import os
 from fastapi.responses import JSONResponse, FileResponse
 from pathlib import Path
 import cv2
@@ -9,6 +11,21 @@ from logger import logger
 
 logger.info("Starting SKINTELLIGENT API...")
 app = FastAPI(title="SKINTELLIGENT API", description="detection Pipeline")
+
+# CORS setins: allow origins from env var or all by defaulut
+allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*")
+if allowed_origins == "*":
+    origins = ["*"]
+else:
+    origins = [o.strip() for o in allowed_origins.split(",") if o.strip()]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 pipeline = DetectionAndClassificationPipeline(config_path=Path("src/config/pipeline_config.yaml"))

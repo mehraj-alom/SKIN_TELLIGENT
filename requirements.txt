@@ -7,7 +7,6 @@ scikit-learn
 matplotlib
 seaborn
 notebook
-dvc
 python-box
 pyYAML
 tqdm
@@ -26,3 +25,4 @@ pathlib
 ultralytics
 streamlit
 opencv-python-headless==4.10.0.84
+docker

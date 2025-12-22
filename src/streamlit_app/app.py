@@ -1,10 +1,11 @@
 import streamlit as st
 import requests
+import os
 from PIL import Image
 import os
 
-# FastAPI endpoint
-API_URL = "http://127.0.0.1:8000/detect"
+# FastAPI endpoint (configurable via environment)
+API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000/detect")
 
 #
 st.set_page_config(
@@ -118,33 +119,60 @@ st.markdown("<p class='subtitle'>AI-Powered Dermatology Assistant for Smart Dete
 # --- File Upload Section ---
 st.markdown("<div class='upload-card'>", unsafe_allow_html=True)
 uploaded_file = st.file_uploader("📤 Upload a skin image for analysis", type=["jpg", "jpeg", "png"])
+show_explain = st.checkbox("🔍 Show Explainability (Grad-CAM++)")
+demo_button = st.button("🧪 Use Demo Image")
+DEMO_IMAGE_PATH = "data/samples/ROI_detector/detection_result.png"
 st.markdown("</div>", unsafe_allow_html=True)
 
-if uploaded_file:
+if "demo_active" not in st.session_state:
+    st.session_state.demo_active = False
+
+if demo_button:
+    if os.path.exists(DEMO_IMAGE_PATH):
+        st.session_state.demo_active = True
+        st.success("🧪 Demo image selected.")
+    else:
+        st.error(f"Demo image not found at {DEMO_IMAGE_PATH}")
+
+if uploaded_file is not None:
+    # any user upload disables demo mode
+    st.session_state.demo_active = False
+
+if uploaded_file or st.session_state.get("demo_active", False):
     col1, col2 = st.columns([1, 1.5], gap="large")
 
     with col1:
-        st.image(uploaded_file, caption="📸 Uploaded Image", use_container_width=True)
+        if st.session_state.demo_active:
+            demo_img = Image.open(DEMO_IMAGE_PATH)
+            st.image(demo_img, caption="📸 Demo Image", use_container_width=True)
+        else:
+            st.image(uploaded_file, caption="📸 Uploaded Image", use_container_width=True)
 
     with col2:
-        image = Image.open(uploaded_file)
+        if st.session_state.demo_active:
+            image = Image.open(DEMO_IMAGE_PATH)
+        else:
+            image = Image.open(uploaded_file)
         st.markdown(f"""
         <div style='background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(0, 173, 181, 0.2);'>
-            <p><b>File Name:</b> {uploaded_file.name}</p>
+            <p><b>File Name:</b> {uploaded_file.name if not st.session_state.get('demo_active', False) else os.path.basename(DEMO_IMAGE_PATH)}</p>
             <p><b>Image Size:</b> {image.size[0]} × {image.size[1]} px</p>
             <p><b>Format:</b> {image.format}</p>
             <p><b>Mode:</b> {image.mode}</p>
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
     if st.button("🚀 Run Detection + Classification"):
         with st.spinner("🔬 Processing image... please wait..."):
-            files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
-
             try:
-                response = requests.post(API_URL, files=files)
+                # prepare files depending on demo or uploaded
+                if st.session_state.get("demo_active", False):
+                    with open(DEMO_IMAGE_PATH, "rb") as f:
+                        files = {"file": (os.path.basename(DEMO_IMAGE_PATH), f, "image/png")}
+                        response = requests.post(API_URL, files=files)
+                else:
+                    files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
+                    response = requests.post(API_URL, files=files)
             except requests.exceptions.ConnectionError:
                 st.error("❌ Cannot connect to FastAPI server. Please start it with `uvicorn src.api.app:app --reload`.")
                 st.stop()
@@ -181,6 +209,15 @@ if uploaded_file:
                                     f"<br><span style='color:{conf_color}'>Confidence: {res['confidence']*100:.2f}%</span></div>",
                                     unsafe_allow_html=True
                                 )
+                                # show gradcam if available and requested
+                                if show_explain and res.get("gradcam"):
+                                    try:
+                                        if os.path.exists(res["gradcam"]):
+                                            st.image(res["gradcam"], caption="🧭 Grad-CAM++ Explanation", use_container_width=True)
+                                        else:
+                                            st.info("Grad-CAM image not found on server.")
+                                    except Exception:
+                                        st.info("Could not load Grad-CAM image.")
             else:
                 st.warning("⚠️ No classification results found.")
         else:
@@ -194,13 +231,12 @@ if uploaded_file:
             st.info("💡 Try re-uploading or check the FastAPI logs for details.")
 
 else:
-    st.markdown("""
-    <div style='text-align: center; padding: 40px; background: rgba(255, 255, 255, 0.05);
-                border-radius: 15px; border: 2px dashed rgba(0, 173, 181, 0.3); margin: 20px 0;'>
+    st.markdown('''
+    <div style='text-align: center; padding: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 15px; border: 2px dashed rgba(0, 173, 181, 0.3); margin: 20px 0;'>
         <h3 style='color: #00D9FF;'>👆 Get Started</h3>
         <p style='color: #E0E0E0;'>Upload a skin image to begin the AI-powered detection and classification process.</p>
     </div>
-    """, unsafe_allow_html=True)
+    ''', unsafe_allow_html=True)
 
 # --- Footer ---
 st.markdown("<hr>", unsafe_allow_html=True)

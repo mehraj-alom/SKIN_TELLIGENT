@@ -163,6 +163,13 @@ class DetectionAndClassificationPipeline:
             logger.info(f"Classifier output for ROI {i}: {preds}")
             if preds and isinstance(preds, dict):
                 preds["roi_index"] = i
+                # generate explainability overlay and attach path
+                try:
+                    gradcam_path = self.classifier.explain(crop, save_path=os.path.join(save_dir, f"gradcam_{i}.jpg"))
+                    if gradcam_path:
+                        preds["gradcam"] = gradcam_path
+                except Exception:
+                    logger.exception("Failed to generate Grad-CAM for ROI {i}")
                 classification_results.append(preds)
             else:
                 logger.warning(f"ROI {i}: No valid prediction returned.")
