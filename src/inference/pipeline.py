@@ -152,8 +152,18 @@ class DetectionAndClassificationPipeline:
 
         boxes, confidences, classes, x_factor, y_factor = self.detector.detect(image)
         if not boxes:
-            logger.warning("no detections found.")        # send the input image for classification. neeed to be corrected the logui heree 
-            return image, []
+            logger.warning("no detections found.")
+            # If no detections, run classification on the full image and
+            # return an empty crops list and a list with the full-image prediction (if any).
+            classification_results = []
+            try:
+                preds = self.classifier.predict(image)
+                if preds and isinstance(preds, dict):
+                    classification_results.append(preds)
+            except Exception:
+                logger.exception("Full-image classification failed when no detections were found.")
+
+            return image, [], classification_results
 
         cropped_regions = self.roi_extractor.crop_rois(image, boxes, x_factor, y_factor)
         
