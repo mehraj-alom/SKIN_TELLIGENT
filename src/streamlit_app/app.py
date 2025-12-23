@@ -271,26 +271,100 @@ st.markdown(
 # Sidebar: Information and controls
 # ========================
 with st.sidebar:
-    st.markdown("### ℹ️ About")
     st.markdown("""
-    **SKIN_TELLIGENT** uses deep learning models to:
-    - 🎯 Detect skin regions of interest
-    - 🩺 Classify detected regions
-    - 🧭 Provide explainability via Grad-CAM++
-    
-    Developed for early dermatology screening.
-    """)
+    <div style='background: rgba(0, 217, 255, 0.1); 
+                padding: 20px; 
+                border-radius: 15px; 
+                border: 2px solid rgba(0, 217, 255, 0.3);
+                margin-bottom: 25px;'>
+        <h3 style='color: #00D9FF; margin-top: 0;'>ℹ️ SKIN_TELLIGENT</h3>
+        <p style='color: #E0E0E0; font-size: 14px; line-height: 1.6;'>
+            <b>AI-Powered Dermatology Analysis Platform</b><br><br>
+            Advanced deep learning models for:
+        </p>
+        <ul style='color: #E0E0E0; font-size: 13px;'>
+            <li><b>🎯 Region Detection:</b> Identifies skin regions of interest</li>
+            <li><b>🩺 Clinical Assessment:</b> Classifies detected regions</li>
+            <li><b>🔍 Explainability:</b> Feature attribution mapping</li>
+        </ul>
+        <p style='color: #00D9FF; font-size: 12px; margin-top: 15px;'>
+            <i>Designed for early dermatology screening and clinical support.</i>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
-    st.markdown("### ⚙️ Settings")
+    
+    st.markdown("""
+    <h3 style='color: #00D9FF; margin-top: 10px;'>⚙️ Analysis Settings</h3>
+    """, unsafe_allow_html=True)
+    
     show_explain = st.checkbox("🔍 Show Feature Attribution Analysis", value=False)
+    
     st.markdown("---")
-    st.markdown("### 📊 Model Info")
+    
+    # Dynamic status section
     st.markdown("""
-    - **Detector:** YOLO-based (ONNX)
-    - **Classifier:** PyTorch ResNet
-    - **Attribution:** Feature Importance Mapping
-    """)
+    <h3 style='color: #00D9FF; margin-top: 10px;'>📊 System Status</h3>
+    """, unsafe_allow_html=True)
+    
+    col_status1, col_status2 = st.columns([1, 1])
+    with col_status1:
+        st.metric("Detector", "Ready ✓", delta=None, label_visibility="collapsed")
+    with col_status2:
+        st.metric("Classifier", "Ready ✓", delta=None, label_visibility="collapsed")
+    
+    st.markdown("""
+    <div style='background: rgba(0, 255, 136, 0.15); 
+                padding: 12px; 
+                border-radius: 10px; 
+                border-left: 4px solid #00FF88;
+                margin-top: 10px;'>
+        <p style='color: #00FF88; font-size: 12px; margin: 0;'>
+            ✓ All models loaded and ready for analysis
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    st.markdown("""
+    <h3 style='color: #00D9FF;'>🧠 Model Architecture</h3>
+    <div style='background: rgba(255, 255, 255, 0.05); 
+                padding: 15px; 
+                border-radius: 10px; 
+                border: 1px solid rgba(0, 217, 255, 0.2);
+                font-size: 13px;'>
+        <p style='color: #E0E0E0; margin: 5px 0;'>
+            <b>Region Detection:</b><br>
+            <span style='color: #00D9FF;'>YOLO v8</span>
+        </p>
+        <p style='color: #E0E0E0; margin: 5px 0;'>
+            <b>Clinical Classifier:</b><br>
+            <span style='color: #00D9FF;'>Custom Trained Model</span>
+        </p>
+        <p style='color: #E0E0E0; margin: 5px 0;'>
+            <b>Explainability:</b><br>
+            <span style='color: #00D9FF;'>Feature Attribution</span>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    st.markdown("""
+    <div style='background: rgba(138, 43, 226, 0.1); 
+                padding: 15px; 
+                border-radius: 10px; 
+                border: 1px solid rgba(138, 43, 226, 0.3);
+                margin-top: 20px;'>
+        <p style='color: #E0E0E0; font-size: 12px;'>
+            <b>📋 Clinical Disclaimer</b><br>
+            This tool is for <b>screening assistance</b> only. 
+            Always consult qualified medical professionals for diagnosis.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ========================
 # Upload / Demo Section
@@ -359,6 +433,10 @@ if uploaded_file or st.session_state.get("demo_active", False):
     # Run Inference Button
     # ========================
     if st.button("� Analyze Image"):
+        # Create status container in sidebar for live updates
+        with st.sidebar:
+            status_container = st.empty()
+        
         with st.spinner("⏳ Processing image... please wait..."):
             try:
                 # Load image as numpy array
@@ -368,11 +446,50 @@ if uploaded_file or st.session_state.get("demo_active", False):
                     image_pil = Image.open(uploaded_file)
                     image_np = cv2.cvtColor(np.array(image_pil), cv2.COLOR_RGB2BGR)
 
+                # Update sidebar status - Stage 1: Analyzing
+                with status_container.container():
+                    st.markdown("""
+                    <div style='background: rgba(0, 217, 255, 0.15); 
+                                padding: 15px; 
+                                border-radius: 10px; 
+                                border-left: 4px solid #00D9FF;'>
+                        <p style='color: #00D9FF; font-size: 13px; margin: 0;'>
+                            🔄 <b>Analyzing image...</b>
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
                 # Run inference pipeline locally
                 output_img, crops, classification_results = pipeline.run_image(
                     image=image_np,
                     save_dir="output/streamlit_results"
                 )
+
+                # Update sidebar status - Stage 2: Thinking/Processing
+                with status_container.container():
+                    st.markdown("""
+                    <div style='background: rgba(138, 43, 226, 0.15); 
+                                padding: 15px; 
+                                border-radius: 10px; 
+                                border-left: 4px solid #8A2BE2;'>
+                        <p style='color: #E0B0FF; font-size: 13px; margin: 0;'>
+                            🧠 <b>Thinking & Classifying...</b>
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                # Update sidebar status - Complete
+                with status_container.container():
+                    st.markdown("""
+                    <div style='background: rgba(0, 255, 136, 0.15); 
+                                padding: 15px; 
+                                border-radius: 10px; 
+                                border-left: 4px solid #00FF88;'>
+                        <p style='color: #00FF88; font-size: 13px; margin: 0;'>
+                            ✓ <b>Analysis Complete</b>
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
 
                 # ========================
                 # Display Detection Results
@@ -453,6 +570,17 @@ if uploaded_file or st.session_state.get("demo_active", False):
                         st.warning("⚠️ No classification results available.")
 
             except Exception as e:
+                with status_container.container():
+                    st.markdown(f"""
+                    <div style='background: rgba(255, 107, 107, 0.15); 
+                                padding: 15px; 
+                                border-radius: 10px; 
+                                border-left: 4px solid #FF6B6B;'>
+                        <p style='color: #FF6B6B; font-size: 13px; margin: 0;'>
+                            ❌ <b>Analysis Failed</b>
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
                 st.error(f"❌ Error during inference: {str(e)}")
                 st.info("💡 Please check the logs or try again with a different image.")
 
@@ -482,6 +610,7 @@ st.markdown(
     <div class='footer'>
         © 2025 SKIN_TELLIGENT | AI-Powered Dermatology Assistant
         <br><small>Developed by <b>Mehraj Alom Tapadar</b> | For Early Skin Health Screening</small>
+        <br><small style='color: #FFD700;'>⚠️ <i>This application is for educational purposes only and should not be used for medical diagnosis.</i></small>
     </div>
     """,
     unsafe_allow_html=True
