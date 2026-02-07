@@ -105,7 +105,7 @@ class AuditLogger:
             print(f"Audit log error: {e}")
 
 
-# Singleton instance
+# #      Singleton instance
 _audit_logger: Optional[AuditLogger] = None
 
 

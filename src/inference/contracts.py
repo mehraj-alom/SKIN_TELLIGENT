@@ -114,12 +114,12 @@ class AuditRecord(BaseModel):
     overall_state: Optional[str] = None
     max_confidence: Optional[float] = None
     
-    # Chat details (if applicable)
+    # Chat details 
     user_query: Optional[str] = None
     assistant_response: Optional[str] = None
     chat_inference_state: Optional[str] = None
     
-    # Error details (if applicable)
+    # Error details
     error_message: Optional[str] = None
     error_type: Optional[str] = None
     

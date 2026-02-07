@@ -74,7 +74,7 @@ The system implements confidence-based inference gating to manage output reliabi
 | Detection | YOLO v8 | Region localization |
 | Classification | PyTorch (Custom CNN) | Condition identification |
 | Explainability | Grad-CAM++ | Decision attribution |
-| Conversational Layer | LangGraph + LangChain | State-managed, context-restricted chat |
+| Conversational Layer | LangGraph  | State-managed, context-restricted chat |
 | Interface | Streamlit | Web application |
 | Containerization | Docker | Deployment consistency |
 
@@ -136,11 +136,7 @@ streamlit run src/streamlit_app/app.py
 - [ ] Evaluation benchmarks with held-out test sets
 - [ ] Confidence calibration analysis
 - [ ] Monitoring hooks for production observability
-- [ ] A/B testing infrastructure for model updates
 
-### Model Improvements
-- [ ] Ensemble methods for improved calibration
-- [ ] Uncertainty quantification refinements
 
 ---
 

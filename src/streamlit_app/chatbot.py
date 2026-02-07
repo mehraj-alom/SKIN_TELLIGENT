@@ -13,7 +13,7 @@ from langgraph.graph import StateGraph, START, END, MessagesState
 from typing import List
 from enum import Enum
 
-# Load environment variables
+
 load_dotenv()
 
 
@@ -52,17 +52,10 @@ class ChatState(MessagesState):
 def call_model(state: ChatState):
     """Knowledge-restricted model call with state-aware behavior."""
     model = get_model()
-    # We now expect the messages to already include the system prompt from the prepare step
-    # OR we handle it here if we traverse the graph. 
-    # To keep it simple for the graph invocation which takes raw messages from history:
+
     
     context = state.get('context', '')
     inference_state = state.get('inference_state', 'ABSTAIN')
-    
-    # Check if system prompt is already present (it shouldn't be if called from get_chatbot_response using raw history)
-    # However, get_chatbot_response now calls _prepare_messages BEFORE invoking graph if we changed it.
-    # Let's revert get_chatbot_response to passing raw inputs to graph for consistency if we use graph?
-    # Actually, let's make call_model use the helper logic too.
     
     # Construct prompt
     system_prompt = _construct_system_prompt(context, inference_state)
